@@ -1,18 +1,22 @@
 const express = require('express');
-const dotenv = require('dotenv');
-const projectsRouter = require('./routes/projects');
-
-dotenv.config();
+const axios = require('axios');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 5000;
 
-app.use(express.json());
+app.get('/', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.github.com/search/repositories?q=stars:%3E1&sort=stars&order=desc');
+        const projects = response.data.items;
 
-// Projects Route
-app.use('/api/projects', projectsRouter);
+        // Render the projects on the screen
+        res.send(projects.map(project => project.full_name).join('\n'));
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error fetching projects');
+    }
+});
 
-// Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
